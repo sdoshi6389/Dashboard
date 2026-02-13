@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 18% 8%;
+    --foreground: 210 20% 98%;
+    --card: 222 16% 11%;
+    --card-foreground: 210 20% 98%;
+    --primary: 172 66% 48%;
+    --primary-foreground: 222 18% 8%;
+    --secondary: 215 18% 18%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 16% 14%;
+    --muted-foreground: 215 14% 58%;
+    --accent: 215 18% 16%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 18% 20%;
+    --input: 215 18% 18%;
+    --ring: 172 66% 48%;
+    --aurora-teal: 172 66% 48%;
+    --aurora-green: 160 58% 48%;
+    --aurora-purple: 270 52% 58%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    background-image: radial-gradient(ellipse 120% 80% at 50% -20%, hsl(172 66% 25% / 0.12), transparent),
+      radial-gradient(ellipse 80% 50% at 100% 50%, hsl(270 52% 25% / 0.08), transparent);
+  }
+}
+
+/* Aurora gradient strips */
+.aurora-gradient {
+  background: linear-gradient(90deg, hsl(172, 66%, 48%), hsl(160, 58%, 48%), hsl(270, 52%, 58%));
+}
+.aurora-gradient-subtle {
+  background: linear-gradient(135deg, hsl(172, 66%, 35% / 0.25), hsl(270, 52%, 40% / 0.2));
+}
+
+/* Header underline */
+.aurora-underline {
+  height: 2px;
+  background: linear-gradient(90deg, hsl(172, 66%, 48%), hsl(160, 58%, 48%), hsl(270, 52%, 58%));
+  opacity: 0.9;
+}
+
+/* Nav active — aurora glow */
+.nav-active {
+  border-left: 3px solid transparent;
+  border-image: linear-gradient(180deg, hsl(172, 66%, 48%), hsl(270, 52%, 58%)) 1;
+  background: linear-gradient(90deg, hsl(172, 66%, 48% / 0.12), hsl(270, 52%, 58% / 0.06), transparent);
+}
+
+/* Progress bar */
+.progress-aurora {
+  background: linear-gradient(90deg, hsl(172, 66%, 48%), hsl(160, 58%, 48%));
+}
+
+/* Cards — modern aurora border glow, seamless */
+.aurora-card {
+  @apply rounded-2xl border transition-all duration-300;
+  border-color: hsl(215 18% 24%);
+  box-shadow: 0 1px 0 0 hsl(215 18% 30% / 0.3);
+}
+.aurora-card:hover {
+  border-color: hsl(172 66% 48% / 0.3);
+  box-shadow: 0 0 0 1px hsl(172 66% 48% / 0.15), 0 12px 28px -12px rgb(0 0 0 / 0.4);
+}
+
+/* Legacy card hover (keep for compatibility) */
+.card-hover-glow:hover {
+  border-color: hsl(172 66% 48% / 0.3);
+  box-shadow: 0 0 0 1px hsl(172 66% 48% / 0.2), 0 4px 20px -4px rgb(0 0 0 / 0.4);
+}
+
+/* Primary CTA — aurora gradient */
+.aurora-btn {
+  background: linear-gradient(135deg, hsl(172, 66%, 48%), hsl(160, 58%, 48%));
+  color: hsl(222 18% 8%);
+  border: none;
+  font-weight: 600;
+  transition: filter 0.2s, box-shadow 0.2s;
+}
+.aurora-btn:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 4px 20px -4px hsl(172 66% 48% / 0.5);
+}
+
+/* Secondary / outline style with aurora tint */
+.aurora-btn-secondary {
+  border-color: hsl(172 66% 48% / 0.4);
+  color: hsl(172 66% 48%);
+}
+.aurora-btn-secondary:hover {
+  background: hsl(172 66% 48% / 0.12);
+  border-color: hsl(172 66% 48% / 0.6);
+}
+
+/* Tabs — aurora active state */
+.aurora-tabs {
+  @apply rounded-xl bg-muted/80 p-1;
+  border: 1px solid hsl(215 18% 22%);
+}
+.aurora-tabs [data-state="active"] {
+  background: linear-gradient(135deg, hsl(172 66% 48% / 0.2), hsl(270 52% 58% / 0.1));
+  border: 1px solid hsl(172 66% 48% / 0.35);
+  color: hsl(210 20% 98%);
+  border-radius: 0.5rem;
+}
+
+/* Inputs — aurora focus ring, rounded */
+.aurora-input:focus-within,
+.aurora-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(172 66% 48% / 0.35);
+  border-color: hsl(172 66% 48% / 0.4);
+}
+
+/* Global seamless inputs and controls */
+input:not([type="range"]):not([type="checkbox"]),
+textarea,
+[role="combobox"] {
+  @apply rounded-xl transition-all duration-200;
+}
+button {
+  @apply transition-all duration-200;
+}
+
+/* Vision board container */
+.aurora-board-container {
+  border: 1px solid hsl(215 18% 22%);
+  box-shadow: inset 0 0 60px -20px hsl(172 66% 48% / 0.08);
+}
+
+/* Drawer — subtle aurora accent */
+.aurora-drawer {
+  border-left: 1px solid hsl(215 18% 22%);
+  box-shadow: -8px 0 32px -8px hsl(172 66% 48% / 0.1);
+}
