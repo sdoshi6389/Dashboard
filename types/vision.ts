@@ -11,6 +11,7 @@ export interface VisionTile {
   title: string;
   category: VisionCategory;
   imageDataUrl?: string;
+  imageUrl?: string;
   notes?: string;
   createdAt: string;
 }
