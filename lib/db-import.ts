@@ -1,5 +1,6 @@
 import type { FullState } from "./db";
 import {
+  getDb,
   insertTask,
   insertVisionTile,
   insertVisionGoal,
