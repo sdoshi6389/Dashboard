@@ -14,12 +14,13 @@ import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { useStore } from "@/lib/store";
-import { todayISO } from "@/lib/date";
-import { isThisMonth } from "@/lib/date";
+import { todayISO, isThisMonth } from "@/lib/date";
 import { Check, ChevronRight, Package, BookOpen, Target, ShoppingCart, ListTodo } from "lucide-react";
 import { Thumbnail } from "@/components/shared/Thumbnail";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+
+import type { Book, BookStatus } from "@/types/reading";
 
 interface DailyReviewDrawerProps {
   open: boolean;
@@ -32,23 +33,29 @@ const STEPS = [
   { id: "reading", label: "Reading", icon: BookOpen },
   { id: "purchases", label: "Purchases due", icon: ShoppingCart },
   { id: "package", label: "Next package", icon: Package },
-];
+] as const;
 
 export function DailyReviewDrawer({ open, onOpenChange }: DailyReviewDrawerProps) {
   const [step, setStep] = useState(0);
+
   const tasks = useStore((s) => s.tasks);
   const setTaskStatus = useStore((s) => s.setTaskStatus);
+
   const visionGoals = useStore((s) => s.visionGoals);
   const updateGoal = useStore((s) => s.updateGoal);
+
   const books = useStore((s) => s.books);
   const updateBook = useStore((s) => s.updateBook);
-  const purchaseItems = useStore((s) => s.purchaseItems);
-  const markPurchased = useStore((s) => s.markPurchased);
-  const packages = useStore((s) => s.packages);
-  const markDelivered = useStore((s) => s.markDelivered);
   const addReview = useStore((s) => s.addReview);
 
+  const purchaseItems = useStore((s) => s.purchaseItems);
+  const markPurchased = useStore((s) => s.markPurchased);
+
+  const packages = useStore((s) => s.packages);
+  const markDelivered = useStore((s) => s.markDelivered);
+
   const todayTasks = tasks.filter((t) => t.dueDate === todayISO());
+
   const focusGoal = visionGoals
     .filter((g) => g.status === "active")
     .sort((a, b) => {
@@ -56,10 +63,13 @@ export function DailyReviewDrawer({ open, onOpenChange }: DailyReviewDrawerProps
       if (!b.targetDate) return -1;
       return new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime();
     })[0];
+
   const currentlyReading = books.filter((b) => b.status === "reading");
+
   const dueThisMonth = purchaseItems.filter(
     (p) => p.nextPurchaseAt && isThisMonth(p.nextPurchaseAt)
   );
+
   const nextPackage = [...packages]
     .filter((p) => p.status !== "delivered" && p.expectedDeliveryDate)
     .sort((a, b) => (a.expectedDeliveryDate! > b.expectedDeliveryDate! ? 1 : -1))[0];
@@ -80,6 +90,7 @@ export function DailyReviewDrawer({ open, onOpenChange }: DailyReviewDrawerProps
           </DrawerDescription>
           <Progress value={((step + 1) / STEPS.length) * 100} className="mt-2 h-1.5" />
         </DrawerHeader>
+
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {currentStep?.id === "tasks" && (
             <ul className="space-y-2">
@@ -101,7 +112,12 @@ export function DailyReviewDrawer({ open, onOpenChange }: DailyReviewDrawerProps
                     >
                       {t.status === "done" && <Check className="h-3.5 w-3.5 text-primary" />}
                     </button>
-                    <span className={cn("flex-1 text-sm", t.status === "done" && "line-through text-muted-foreground")}>
+                    <span
+                      className={cn(
+                        "flex-1 text-sm",
+                        t.status === "done" && "line-through text-muted-foreground"
+                      )}
+                    >
                       {t.title}
                     </span>
                   </li>
@@ -114,7 +130,9 @@ export function DailyReviewDrawer({ open, onOpenChange }: DailyReviewDrawerProps
             <div className="space-y-4">
               <div className="rounded-lg border border-border p-4">
                 <p className="font-medium">{focusGoal.title}</p>
-                <p className="text-sm text-muted-foreground mt-1">{focusGoal.why}</p>
+                {focusGoal.why && (
+                  <p className="text-sm text-muted-foreground mt-1">{focusGoal.why}</p>
+                )}
                 <div className="mt-4">
                   <label className="text-xs text-muted-foreground">Progress %</label>
                   <Slider
@@ -122,12 +140,14 @@ export function DailyReviewDrawer({ open, onOpenChange }: DailyReviewDrawerProps
                     onChange={(v) => updateGoal(focusGoal.id, { progress: v })}
                     min={0}
                     max={100}
+                    step={1}
                     className="mt-1"
                   />
                 </div>
               </div>
             </div>
           )}
+
           {currentStep?.id === "goal" && !focusGoal && (
             <p className="text-sm text-muted-foreground">No active focus goal.</p>
           )}
@@ -138,7 +158,12 @@ export function DailyReviewDrawer({ open, onOpenChange }: DailyReviewDrawerProps
                 <p className="text-sm text-muted-foreground">Nothing currently reading.</p>
               ) : (
                 currentlyReading.map((b) => (
-                  <ReadingStep key={b.id} book={b} onUpdate={(patch) => updateBook(b.id, patch)} onAddReview={addReview} />
+                  <ReadingStep
+                    key={b.id}
+                    book={b}
+                    onUpdate={(updates) => updateBook(b.id, updates)}
+                    onAddReview={addReview}
+                  />
                 ))
               )}
             </div>
@@ -180,16 +205,22 @@ export function DailyReviewDrawer({ open, onOpenChange }: DailyReviewDrawerProps
                       Expected: {nextPackage.expectedDeliveryDate}
                     </p>
                   </div>
-                  <Button onClick={() => markDelivered(nextPackage!.id)}>Mark delivered</Button>
+                  <Button onClick={() => markDelivered(nextPackage.id)}>Mark delivered</Button>
                 </div>
               )}
             </div>
           )}
         </div>
+
         <div className="flex justify-between p-4 border-t border-border">
-          <Button variant="outline" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>
+          <Button
+            variant="outline"
+            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            disabled={step === 0}
+          >
             Back
           </Button>
+
           {step < STEPS.length - 1 ? (
             <Button onClick={() => setStep((s) => s + 1)} className="gap-1">
               Next <ChevronRight className="h-4 w-4" />
@@ -210,8 +241,8 @@ function ReadingStep({
   onUpdate,
   onAddReview,
 }: {
-  book: { id: string; title: string; author: string };
-  onUpdate: (patch: { status?: string; pages?: number }) => void;
+  book: Pick<Book, "id" | "title" | "author">;
+  onUpdate: (patch: Partial<Book>) => void;
   onAddReview: (r: { bookId: string; rating: number; summary?: string; takeaways: string[] }) => void;
 }) {
   const [note, setNote] = useState("");
@@ -220,9 +251,14 @@ function ReadingStep({
   const [summary, setSummary] = useState("");
   const [takeaways, setTakeaways] = useState("");
 
+  const doneStatus: BookStatus = "done";
+
   return (
     <div className="rounded-lg border border-border p-4 space-y-3">
-      <p className="font-medium">{book.title} — {book.author}</p>
+      <p className="font-medium">
+        {book.title} — {book.author}
+      </p>
+
       <div>
         <label className="text-xs text-muted-foreground">Quick note</label>
         <Textarea
@@ -231,11 +267,15 @@ function ReadingStep({
           onChange={(e) => setNote(e.target.value)}
           className="mt-1 min-h-[60px]"
         />
+        {/* NOTE: This note is currently local-only UI state.
+            If you want to persist notes per reading session, add a field on Book or a separate ReadingNote type. */}
       </div>
+
       <div className="flex gap-2">
-        <Button size="sm" variant="outline" onClick={() => onUpdate({ status: "done" })}>
+        <Button size="sm" variant="outline" onClick={() => onUpdate({ status: doneStatus })}>
           Mark as done
         </Button>
+
         {!showReview ? (
           <Button size="sm" variant="outline" onClick={() => setShowReview(true)}>
             Add review
@@ -244,10 +284,30 @@ function ReadingStep({
           <div className="flex-1 space-y-2 border rounded-lg p-3">
             <div>
               <label className="text-xs">Rating (1-5)</label>
-              <Slider value={rating} onChange={setRating} min={1} max={5} step={1} className="mt-1" />
+              <Slider
+                value={rating}
+                onChange={(v) => setRating(v ?? 3)}
+                min={1}
+                max={5}
+                step={1}
+                className="mt-1"
+              />
             </div>
-            <Input placeholder="Summary" value={summary} onChange={(e) => setSummary(e.target.value)} className="h-9" />
-            <Input placeholder="Takeaways (comma separated)" value={takeaways} onChange={(e) => setTakeaways(e.target.value)} className="h-9" />
+
+            <Input
+              placeholder="Summary"
+              value={summary}
+              onChange={(e) => setSummary(e.target.value)}
+              className="h-9"
+            />
+
+            <Input
+              placeholder="Takeaways (comma separated)"
+              value={takeaways}
+              onChange={(e) => setTakeaways(e.target.value)}
+              className="h-9"
+            />
+
             <Button
               size="sm"
               onClick={() => {
@@ -255,9 +315,15 @@ function ReadingStep({
                   bookId: book.id,
                   rating,
                   summary: summary || undefined,
-                  takeaways: takeaways ? takeaways.split(",").map((t) => t.trim()).filter(Boolean) : [],
+                  takeaways: takeaways
+                    ? takeaways
+                        .split(",")
+                        .map((t) => t.trim())
+                        .filter(Boolean)
+                    : [],
                 });
-                onUpdate({ status: "done" });
+
+                onUpdate({ status: doneStatus });
                 setShowReview(false);
               }}
             >
