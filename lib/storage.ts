@@ -1,6 +1,7 @@
 const STORAGE_KEY = "doshi-dashboard-state";
 const SCHEMA_VERSION = 1;
 
+//for cloud storage
 import type { FullState } from "@/types/state";
 
 export interface PersistedState extends FullState {

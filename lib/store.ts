@@ -1,3 +1,5 @@
+//cloud storage
+//cloud storage
 import { create } from "zustand";
 import type { Task } from "@/types/todo";
 import type { VisionTile, VisionGoal } from "@/types/vision";
@@ -182,9 +184,33 @@ export const useStore = create<AppState>((set, get) => ({
     await get().pushToCloud();
   },
 
+  // ✅ FIXED SIGN OUT: clear auth + cancel sync + wipe local cache + wipe in-memory state
   signOut: async () => {
-    await supabase.auth.signOut();
-    set({ _authed: false });
+    // cancel any pending cloud save
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
+    }
+
+    const { error } = await supabase.auth.signOut();
+    if (error) throw new Error(error.message);
+
+    // clear browser cache
+    clearStorage();
+
+    // wipe in-memory state so UI clears immediately
+    set({
+      _authed: false,
+      _syncing: false,
+      tasks: [],
+      visionTiles: [],
+      visionGoals: [],
+      books: [],
+      reviews: [],
+      purchaseItems: [],
+      fragrances: [],
+      packages: [],
+    });
   },
 
   resetToDemo: async () => {
@@ -372,6 +398,7 @@ export const useStore = create<AppState>((set, get) => ({
   },
   markDelivered: (id) => get().updatePackage(id, { status: "delivered" }),
 }));
+
 
 
 //local storage

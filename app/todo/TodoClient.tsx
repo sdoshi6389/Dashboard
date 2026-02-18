@@ -16,13 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Check, Circle, Pencil, Trash2 } from "lucide-react";
+import { Plus, Check, Pencil, Trash2 } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { todayISO } from "@/lib/date";
-import { isWithinDays } from "@/lib/date";
-import { formatDisplay } from "@/lib/date";
+import { todayISO, isWithinDays, formatDisplay } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import type { Task, TaskPriority, TaskStatus } from "@/types/todo";
+import type { Task, TaskPriority } from "@/types/todo";
 import { TodoDrawer } from "@/components/forms/TodoDrawer";
 
 type ViewFilter = "today" | "upcoming" | "all" | "completed";
@@ -46,10 +44,12 @@ export default function TodoPage() {
   }, [searchParams]);
 
   const allTags = Array.from(new Set(tasks.flatMap((t) => t.tags))).sort();
+
   const filtered = tasks
     .filter((t) => {
       if (view === "today") return t.dueDate === todayISO();
-      if (view === "upcoming") return t.dueDate && t.dueDate !== todayISO() && isWithinDays(t.dueDate, 7);
+      if (view === "upcoming")
+        return t.dueDate && t.dueDate !== todayISO() && isWithinDays(t.dueDate, 7);
       if (view === "completed") return t.status === "done";
       return true; // all
     })
@@ -62,15 +62,19 @@ export default function TodoPage() {
       return pri[a.priority] - pri[b.priority];
     });
 
+  // ✅ FIX: if you quick-add while on "Today", auto-set dueDate to today
   const handleQuickAdd = () => {
     const title = quickAdd.trim();
     if (!title) return;
+
     addTask({
       title,
       priority: "med",
       status: "todo",
       tags: [],
+      dueDate: view === "today" ? todayISO() : undefined,
     });
+
     setQuickAdd("");
   };
 
@@ -86,6 +90,7 @@ export default function TodoPage() {
           </Button>
         }
       />
+
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex flex-1 min-w-[220px] max-w-md gap-2">
           <Input
@@ -95,10 +100,16 @@ export default function TodoPage() {
             onKeyDown={(e) => e.key === "Enter" && handleQuickAdd()}
             className="aurora-input rounded-xl h-11"
           />
-          <Button onClick={handleQuickAdd} size="icon" variant="secondary" className="rounded-xl h-11 w-11">
+          <Button
+            onClick={handleQuickAdd}
+            size="icon"
+            variant="secondary"
+            className="rounded-xl h-11 w-11"
+          >
             <Plus className="h-4 w-4" />
           </Button>
         </div>
+
         <Select value={tagFilter} onValueChange={setTagFilter}>
           <SelectTrigger className="w-[140px] aurora-input rounded-xl h-11">
             <SelectValue placeholder="Tag" />
@@ -106,11 +117,14 @@ export default function TodoPage() {
           <SelectContent>
             <SelectItem value="all">All tags</SelectItem>
             {allTags.map((tag) => (
-              <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+              <SelectItem key={tag} value={tag}>
+                {tag}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
+
       <Tabs value={view} onValueChange={(v) => setView(v as ViewFilter)}>
         <TabsList className="aurora-tabs">
           <TabsTrigger value="today">Today</TabsTrigger>
@@ -118,12 +132,17 @@ export default function TodoPage() {
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="completed">Completed</TabsTrigger>
         </TabsList>
+
         <TabsContent value={view} className="mt-6">
           {filtered.length === 0 ? (
             <EmptyState
               title={view === "completed" ? "No completed tasks" : "No tasks here"}
               description="Add a task or switch view."
-              action={<Button onClick={() => setAddOpen(true)} className="aurora-btn rounded-xl">Add task</Button>}
+              action={
+                <Button onClick={() => setAddOpen(true)} className="aurora-btn rounded-xl">
+                  Add task
+                </Button>
+              }
             />
           ) : (
             <ul className="space-y-2">
@@ -131,7 +150,9 @@ export default function TodoPage() {
                 <TaskRow
                   key={t.id}
                   task={t}
-                  onToggle={() => setTaskStatus(t.id, t.status === "done" ? "todo" : "done")}
+                  onToggle={() =>
+                    setTaskStatus(t.id, t.status === "done" ? "todo" : "done")
+                  }
                   onEdit={() => setEditId(t.id)}
                   onDelete={() => deleteTask(t.id)}
                 />
@@ -140,6 +161,7 @@ export default function TodoPage() {
           )}
         </TabsContent>
       </Tabs>
+
       <TodoDrawer
         open={addOpen || !!editId}
         onOpenChange={(open) => {
@@ -154,7 +176,12 @@ export default function TodoPage() {
             updateTask(editId, data);
             setEditId(null);
           } else {
-            addTask(data);
+            // ✅ FIX: if creating from the drawer while on "Today",
+            // default dueDate to today IF user didn't set one
+            addTask({
+              ...data,
+              dueDate: data.dueDate ?? (view === "today" ? todayISO() : undefined),
+            });
           }
         }}
       />
@@ -181,8 +208,11 @@ function TaskRow({
           onClick={onToggle}
           className="shrink-0 rounded-full border-2 border-primary w-6 h-6 flex items-center justify-center hover:bg-primary/10 transition-colors"
         >
-          {task.status === "done" ? <Check className="h-3.5 w-3.5 text-primary" /> : null}
+          {task.status === "done" ? (
+            <Check className="h-3.5 w-3.5 text-primary" />
+          ) : null}
         </button>
+
         <span
           className={cn(
             "flex-1 text-sm cursor-pointer",
@@ -192,18 +222,29 @@ function TaskRow({
         >
           {task.title}
         </span>
-        <Badge variant="outline" className="text-xs">{task.priority}</Badge>
+
+        <Badge variant="outline" className="text-xs">
+          {task.priority}
+        </Badge>
+
         {task.dueDate && (
-          <span className="text-xs text-muted-foreground">{formatDisplay(task.dueDate)}</span>
+          <span className="text-xs text-muted-foreground">
+            {formatDisplay(task.dueDate)}
+          </span>
         )}
+
         <div className="flex gap-1">
           {task.tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+            <Badge key={tag} variant="secondary" className="text-xs">
+              {tag}
+            </Badge>
           ))}
         </div>
+
         <Button variant="ghost" size="icon" onClick={onEdit}>
           <Pencil className="h-4 w-4" />
         </Button>
+
         <Button variant="ghost" size="icon" onClick={onDelete}>
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
