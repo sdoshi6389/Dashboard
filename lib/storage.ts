@@ -1,17 +1,24 @@
 const STORAGE_KEY = "doshi-dashboard-state";
 const SCHEMA_VERSION = 1;
 
-export interface PersistedState {
+import type { FullState } from "@/types/state";
+
+export interface PersistedState extends FullState {
   version: number;
-  tasks: import("@/types").Task[];
-  visionTiles: import("@/types").VisionTile[];
-  visionGoals: import("@/types").VisionGoal[];
-  books: import("@/types").Book[];
-  reviews: import("@/types").Review[];
-  purchaseItems: import("@/types").PurchaseItem[];
-  fragrances: import("@/types").Fragrance[];
-  packages: import("@/types").Package[];
 }
+
+// for local storage
+// export interface PersistedState {
+//   version: number;
+//   tasks: import("@/types").Task[];
+//   visionTiles: import("@/types").VisionTile[];
+//   visionGoals: import("@/types").VisionGoal[];
+//   books: import("@/types").Book[];
+//   reviews: import("@/types").Review[];
+//   purchaseItems: import("@/types").PurchaseItem[];
+//   fragrances: import("@/types").Fragrance[];
+//   packages: import("@/types").Package[];
+// }
 
 export function loadState(): PersistedState | null {
   if (typeof window === "undefined") return null;
