@@ -19,10 +19,21 @@ export interface Book {
 export interface Review {
   id: string;
   bookId: string;
-  rating: number; // 1-5
+  rating: number;
   summary?: string;
   takeaways: string[];
   favoriteQuote?: string;
   applyThis?: string;
+  createdAt: string;
+}
+
+export interface ReadingLog {
+  id: string;
+  bookId: string;
+  date: string;
+  chapter?: string;
+  pagesRead?: number;
+  upToPage?: number;
+  notes?: string;
   createdAt: string;
 }

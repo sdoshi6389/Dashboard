@@ -51,7 +51,7 @@ export default function TodoPage() {
       if (view === "upcoming")
         return t.dueDate && t.dueDate !== todayISO() && isWithinDays(t.dueDate, 7);
       if (view === "completed") return t.status === "done";
-      return true; // all
+      return true;
     })
     .filter((t) => tagFilter === "all" || t.tags.includes(tagFilter))
     .sort((a, b) => {
@@ -62,7 +62,6 @@ export default function TodoPage() {
       return pri[a.priority] - pri[b.priority];
     });
 
-  // ✅ FIX: if you quick-add while on "Today", auto-set dueDate to today
   const handleQuickAdd = () => {
     const title = quickAdd.trim();
     if (!title) return;
@@ -176,8 +175,6 @@ export default function TodoPage() {
             updateTask(editId, data);
             setEditId(null);
           } else {
-            // ✅ FIX: if creating from the drawer while on "Today",
-            // default dueDate to today IF user didn't set one
             addTask({
               ...data,
               dueDate: data.dueDate ?? (view === "today" ? todayISO() : undefined),
@@ -202,52 +199,64 @@ function TaskRow({
 }) {
   return (
     <Card className="aurora-card">
-      <CardContent className="py-3 px-4 flex items-center gap-3">
+      <CardContent className="py-3 px-4 flex items-start gap-3">
         <button
           type="button"
           onClick={onToggle}
-          className="shrink-0 rounded-full border-2 border-primary w-6 h-6 flex items-center justify-center hover:bg-primary/10 transition-colors"
+          className="shrink-0 rounded-full border-2 border-primary w-6 h-6 mt-1 flex items-center justify-center hover:bg-primary/10 transition-colors"
         >
           {task.status === "done" ? (
             <Check className="h-3.5 w-3.5 text-primary" />
           ) : null}
         </button>
 
-        <span
-          className={cn(
-            "flex-1 text-sm cursor-pointer",
-            task.status === "done" && "line-through text-muted-foreground"
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={onEdit}>
+          <p
+            className={cn(
+              "text-sm font-medium",
+              task.status === "done" && "line-through text-muted-foreground"
+            )}
+          >
+            {task.title}
+          </p>
+
+          {task.notes && (
+            <p
+              className={cn(
+                "mt-1 text-xs text-muted-foreground whitespace-pre-wrap break-words",
+                task.status === "done" && "line-through"
+              )}
+            >
+              {task.notes}
+            </p>
           )}
-          onClick={onEdit}
-        >
-          {task.title}
-        </span>
+        </div>
 
-        <Badge variant="outline" className="text-xs">
-          {task.priority}
-        </Badge>
+        <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
+          <Badge variant="outline" className="text-xs">
+            {task.priority}
+          </Badge>
 
-        {task.dueDate && (
-          <span className="text-xs text-muted-foreground">
-            {formatDisplay(task.dueDate)}
-          </span>
-        )}
+          {task.dueDate && (
+            <span className="text-xs text-muted-foreground">
+              {formatDisplay(task.dueDate)}
+            </span>
+          )}
 
-        <div className="flex gap-1">
           {task.tags.map((tag) => (
             <Badge key={tag} variant="secondary" className="text-xs">
               {tag}
             </Badge>
           ))}
+
+          <Button variant="ghost" size="icon" onClick={onEdit}>
+            <Pencil className="h-4 w-4" />
+          </Button>
+
+          <Button variant="ghost" size="icon" onClick={onDelete}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
         </div>
-
-        <Button variant="ghost" size="icon" onClick={onEdit}>
-          <Pencil className="h-4 w-4" />
-        </Button>
-
-        <Button variant="ghost" size="icon" onClick={onDelete}>
-          <Trash2 className="h-4 w-4 text-destructive" />
-        </Button>
       </CardContent>
     </Card>
   );

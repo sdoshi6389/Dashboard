@@ -1,23 +1,32 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Thumbnail } from "@/components/shared/Thumbnail";
-import { Plus, Sparkles, ExternalLink } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
 import { useStore } from "@/lib/store";
 import type { Fragrance, FragranceSeason } from "@/types/fragrances";
 import { FragranceDrawer } from "@/components/forms/FragranceDrawer";
 
-const SEASONS: FragranceSeason[] = ["spring", "summer", "fall", "winter", "all"];
+const SEASONS: FragranceSeason[] = ["spring", "summer", "fall", "winter"];
 
-export default function FragrancesPage() {
+function getFragranceSeasons(fragrance: Fragrance): FragranceSeason[] {
+  if (Array.isArray(fragrance.seasons) && fragrance.seasons.length > 0) {
+    return fragrance.seasons;
+  }
+  if (fragrance.season) {
+    return [fragrance.season];
+  }
+  return [];
+}
+
+export default function FragrancesClient() {
   const searchParams = useSearchParams();
   const [addOpen, setAddOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -34,14 +43,24 @@ export default function FragrancesPage() {
     if (searchParams.get("add") === "1") setAddOpen(true);
   }, [searchParams]);
 
-  const filtered = fragrances
-    .filter((f) => seasonFilter === "all" || f.season === seasonFilter)
-    .filter((f) => !vibeFilter || f.vibeTags.some((t) => t.toLowerCase().includes(vibeFilter.toLowerCase())))
-    .filter((f) => {
-      if (sampledFilter === "sampled") return f.sampled;
-      if (sampledFilter === "unsampled") return !f.sampled;
-      return true;
-    });
+  const filtered = useMemo(() => {
+    return fragrances
+      .filter((f) => {
+        if (seasonFilter === "all") return true;
+        return getFragranceSeasons(f).includes(seasonFilter as FragranceSeason);
+      })
+      .filter((f) =>
+        !vibeFilter ||
+        f.vibeTags.some((t) => t.toLowerCase().includes(vibeFilter.toLowerCase())) ||
+        f.name.toLowerCase().includes(vibeFilter.toLowerCase()) ||
+        f.brand.toLowerCase().includes(vibeFilter.toLowerCase())
+      )
+      .filter((f) => {
+        if (sampledFilter === "sampled") return f.sampled;
+        if (sampledFilter === "unsampled") return !f.sampled;
+        return true;
+      });
+  }, [fragrances, seasonFilter, vibeFilter, sampledFilter]);
 
   const toSample = fragrances.filter((f) => !f.sampled);
 
@@ -67,7 +86,10 @@ export default function FragrancesPage() {
                 key={f.id}
                 fragrance={f}
                 onOpenDetail={() => setDetailId(f.id)}
-                onEdit={() => { setEditId(f.id); setAddOpen(true); }}
+                onEdit={() => {
+                  setEditId(f.id);
+                  setAddOpen(true);
+                }}
                 onDelete={() => deleteFragrance(f.id)}
               />
             ))}
@@ -78,11 +100,12 @@ export default function FragrancesPage() {
       <section>
         <div className="flex flex-wrap gap-3 mb-4">
           <Input
-            placeholder="Filter by vibe..."
+            placeholder="Filter by vibe, name, or brand..."
             value={vibeFilter}
             onChange={(e) => setVibeFilter(e.target.value)}
-            className="max-w-[200px] aurora-input rounded-xl h-10"
+            className="max-w-[240px] aurora-input rounded-xl h-10"
           />
+
           <select
             value={seasonFilter}
             onChange={(e) => setSeasonFilter(e.target.value)}
@@ -90,9 +113,12 @@ export default function FragrancesPage() {
           >
             <option value="all">All seasons</option>
             {SEASONS.map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>
+                {s}
+              </option>
             ))}
           </select>
+
           <select
             value={sampledFilter}
             onChange={(e) => setSampledFilter(e.target.value as typeof sampledFilter)}
@@ -103,12 +129,17 @@ export default function FragrancesPage() {
             <option value="unsampled">To sample</option>
           </select>
         </div>
+
         {filtered.length === 0 ? (
           <EmptyState
             icon={Sparkles}
             title="No fragrances"
             description="Add a fragrance to track."
-            action={<Button onClick={() => setAddOpen(true)} className="aurora-btn rounded-xl">Add fragrance</Button>}
+            action={
+              <Button onClick={() => setAddOpen(true)} className="aurora-btn rounded-xl">
+                Add fragrance
+              </Button>
+            }
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -117,7 +148,10 @@ export default function FragrancesPage() {
                 key={f.id}
                 fragrance={f}
                 onOpenDetail={() => setDetailId(f.id)}
-                onEdit={() => { setEditId(f.id); setAddOpen(true); }}
+                onEdit={() => {
+                  setEditId(f.id);
+                  setAddOpen(true);
+                }}
                 onDelete={() => deleteFragrance(f.id)}
               />
             ))}
@@ -127,7 +161,10 @@ export default function FragrancesPage() {
 
       <FragranceDrawer
         open={addOpen}
-        onOpenChange={(open) => { setAddOpen(open); if (!open) setEditId(null); }}
+        onOpenChange={(open) => {
+          setAddOpen(open);
+          if (!open) setEditId(null);
+        }}
         fragrance={editId ? fragrances.find((f) => f.id === editId) ?? null : null}
         onSave={(data) => {
           if (editId) {
@@ -139,11 +176,14 @@ export default function FragrancesPage() {
           setAddOpen(false);
         }}
       />
+
       {detailId && (
         <FragranceDrawer
           mode="detail"
           open={!!detailId}
-          onOpenChange={(open) => { if (!open) setDetailId(null); }}
+          onOpenChange={(open) => {
+            if (!open) setDetailId(null);
+          }}
           fragrance={fragrances.find((f) => f.id === detailId) ?? null}
           onSave={() => {}}
           onEditClick={() => {
@@ -168,21 +208,46 @@ function FragranceCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const seasons = getFragranceSeasons(fragrance);
+
   return (
-    <Card className="aurora-card cursor-pointer transition-all duration-200 hover:border-aurora-teal/30" onClick={onOpenDetail}>
+    <Card
+      className="aurora-card cursor-pointer transition-all duration-200 hover:border-aurora-teal/30"
+      onClick={onOpenDetail}
+    >
       <CardContent className="p-4 flex gap-4">
-        <Thumbnail imageDataUrl={fragrance.imageDataUrl} imageUrl={fragrance.imageUrl} alt={fragrance.name} size="lg" />
+        <Thumbnail
+          imageDataUrl={fragrance.imageDataUrl}
+          imageUrl={fragrance.imageUrl}
+          alt={fragrance.name}
+          size="lg"
+        />
+
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate">{fragrance.name}</p>
           <p className="text-sm text-muted-foreground">{fragrance.brand}</p>
+
           <div className="flex flex-wrap gap-1 mt-2">
-            <Badge variant="outline" className="text-xs">{fragrance.season}</Badge>
+            {seasons.map((season) => (
+              <Badge key={season} variant="outline" className="text-xs">
+                {season}
+              </Badge>
+            ))}
             {fragrance.sampled && <Badge variant="secondary">Sampled</Badge>}
             {fragrance.wouldBuy && <Badge className="text-xs">Would buy</Badge>}
           </div>
+
+          <div className="text-xs text-muted-foreground mt-2">
+            Longevity {fragrance.longevity.toFixed(1)}/5 · Projection {fragrance.projection.toFixed(1)}/5
+          </div>
+
           <div className="flex gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
-            <Button size="sm" variant="outline" onClick={onEdit}>Edit</Button>
-            <Button size="sm" variant="ghost" onClick={onDelete} className="text-destructive">Delete</Button>
+            <Button size="sm" variant="outline" onClick={onEdit}>
+              Edit
+            </Button>
+            <Button size="sm" variant="ghost" onClick={onDelete} className="text-destructive">
+              Delete
+            </Button>
           </div>
         </div>
       </CardContent>

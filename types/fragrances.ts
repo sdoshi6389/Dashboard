@@ -1,4 +1,4 @@
-export type FragranceSeason = "spring" | "summer" | "fall" | "winter" | "all";
+export type FragranceSeason = "spring" | "summer" | "fall" | "winter";
 
 export interface Fragrance {
   id: string;
@@ -7,10 +7,11 @@ export interface Fragrance {
   notesTop: string[];
   notesMid: string[];
   notesBase: string[];
-  season: FragranceSeason;
+  seasons: FragranceSeason[];
+  season?: FragranceSeason;
   vibeTags: string[];
-  longevity: number; // 1-5
-  projection: number; // 1-5
+  longevity: number; // 1.0 - 5.0
+  projection: number; // 1.0 - 5.0
   priceRange?: string;
   link?: string;
   sampled: boolean;
