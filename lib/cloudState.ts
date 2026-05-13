@@ -21,6 +21,15 @@ function normalizeState(state: Partial<FullState> | null | undefined): FullState
     workouts: state?.workouts ?? [],
     routines: state?.routines ?? [],
     trips: state?.trips ?? [],
+    financialAccounts: state?.financialAccounts ?? [],
+    sinkingFunds: state?.sinkingFunds ?? [],
+    paychecks: state?.paychecks ?? [],
+    investmentHoldings: state?.investmentHoldings ?? [],
+    monthlyFinancialReviews: state?.monthlyFinancialReviews ?? [],
+    budgetCategories: state?.budgetCategories ?? [],
+    monthlyBudgetActuals: state?.monthlyBudgetActuals ?? [],
+    accountPartitions: state?.accountPartitions ?? [],
+    financialPurchases: state?.financialPurchases ?? [],
   };
 }
 

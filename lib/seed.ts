@@ -394,5 +394,14 @@ export function getSeedState(): import("./storage").PersistedState {
     workouts: seedWorkouts,
     routines: seedRoutines,
     trips: seedTrips,
+    financialAccounts: [],
+    sinkingFunds: [],
+    paychecks: [],
+    investmentHoldings: [],
+    monthlyFinancialReviews: [],
+    budgetCategories: [],
+    monthlyBudgetActuals: [],
+    accountPartitions: [],
+    financialPurchases: [],
   };
 }

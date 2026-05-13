@@ -809,6 +809,15 @@ export function loadFullState(): FullState {
     workouts,
     routines,
     trips,
+    financialAccounts: [],
+    sinkingFunds: [],
+    paychecks: [],
+    investmentHoldings: [],
+    monthlyFinancialReviews: [],
+    budgetCategories: [],
+    monthlyBudgetActuals: [],
+    accountPartitions: [],
+    financialPurchases: [],
   };
 }
 

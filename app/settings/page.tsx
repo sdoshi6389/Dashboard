@@ -27,6 +27,15 @@ function parseExportFile(text: string): FullState | null {
         workouts: (parsed.workouts ?? []) as FullState["workouts"],
         routines: (parsed.routines ?? []) as FullState["routines"],
         trips: (parsed.trips ?? []) as FullState["trips"],
+        financialAccounts: (parsed.financialAccounts ?? []) as FullState["financialAccounts"],
+        sinkingFunds: (parsed.sinkingFunds ?? []) as FullState["sinkingFunds"],
+        paychecks: (parsed.paychecks ?? []) as FullState["paychecks"],
+        investmentHoldings: (parsed.investmentHoldings ?? []) as FullState["investmentHoldings"],
+        monthlyFinancialReviews: (parsed.monthlyFinancialReviews ?? []) as FullState["monthlyFinancialReviews"],
+        budgetCategories: (parsed.budgetCategories ?? []) as FullState["budgetCategories"],
+        monthlyBudgetActuals: (parsed.monthlyBudgetActuals ?? []) as FullState["monthlyBudgetActuals"],
+        accountPartitions: (parsed.accountPartitions ?? []) as FullState["accountPartitions"],
+        financialPurchases: (parsed.financialPurchases ?? []) as FullState["financialPurchases"],
       };
     }
     return null;

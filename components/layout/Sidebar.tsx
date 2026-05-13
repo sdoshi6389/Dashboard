@@ -7,7 +7,6 @@ import {
   CheckSquare,
   Image,
   BookOpen,
-  ShoppingCart,
   Sparkles,
   Package,
   Utensils,
@@ -15,6 +14,7 @@ import {
   Clock3,
   MapPinned,
   Settings,
+  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,13 +23,13 @@ const nav = [
   { href: "/todo", label: "To-Do", icon: CheckSquare },
   { href: "/vision", label: "Vision", icon: Image },
   { href: "/reading", label: "Reading", icon: BookOpen },
-  { href: "/purchases", label: "Purchases", icon: ShoppingCart },
   { href: "/fragrances", label: "Fragrances", icon: Sparkles },
   { href: "/packages", label: "Packages", icon: Package },
   { href: "/meals", label: "Meals", icon: Utensils },
   { href: "/workouts", label: "Workouts", icon: Dumbbell },
   { href: "/routines", label: "Routines", icon: Clock3 },
   { href: "/travels", label: "Travels", icon: MapPinned },
+  { href: "/finances", label: "Finances", icon: DollarSign },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

@@ -33,6 +33,15 @@ export function loadState(): PersistedState | null {
       workouts: parsed.workouts ?? [],
       routines: parsed.routines ?? [],
       trips: parsed.trips ?? [],
+      financialAccounts: parsed.financialAccounts ?? [],
+      sinkingFunds: parsed.sinkingFunds ?? [],
+      paychecks: parsed.paychecks ?? [],
+      investmentHoldings: parsed.investmentHoldings ?? [],
+      monthlyFinancialReviews: parsed.monthlyFinancialReviews ?? [],
+      budgetCategories: parsed.budgetCategories ?? [],
+      monthlyBudgetActuals: parsed.monthlyBudgetActuals ?? [],
+      accountPartitions: parsed.accountPartitions ?? [],
+      financialPurchases: parsed.financialPurchases ?? [],
     };
   } catch {
     return null;
@@ -58,6 +67,15 @@ export function saveState(state: PersistedState): void {
       workouts: state.workouts ?? [],
       routines: state.routines ?? [],
       trips: state.trips ?? [],
+      financialAccounts: state.financialAccounts ?? [],
+      sinkingFunds: state.sinkingFunds ?? [],
+      paychecks: state.paychecks ?? [],
+      investmentHoldings: state.investmentHoldings ?? [],
+      monthlyFinancialReviews: state.monthlyFinancialReviews ?? [],
+      budgetCategories: state.budgetCategories ?? [],
+      monthlyBudgetActuals: state.monthlyBudgetActuals ?? [],
+      accountPartitions: state.accountPartitions ?? [],
+      financialPurchases: state.financialPurchases ?? [],
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
@@ -83,6 +101,15 @@ export function exportJSON(state: PersistedState): string {
       workouts: state.workouts ?? [],
       routines: state.routines ?? [],
       trips: state.trips ?? [],
+      financialAccounts: state.financialAccounts ?? [],
+      sinkingFunds: state.sinkingFunds ?? [],
+      paychecks: state.paychecks ?? [],
+      investmentHoldings: state.investmentHoldings ?? [],
+      monthlyFinancialReviews: state.monthlyFinancialReviews ?? [],
+      budgetCategories: state.budgetCategories ?? [],
+      monthlyBudgetActuals: state.monthlyBudgetActuals ?? [],
+      accountPartitions: state.accountPartitions ?? [],
+      financialPurchases: state.financialPurchases ?? [],
     },
     null,
     2
@@ -110,6 +137,15 @@ export function importJSON(json: string): PersistedState | null {
       workouts: parsed.workouts ?? [],
       routines: parsed.routines ?? [],
       trips: parsed.trips ?? [],
+      financialAccounts: parsed.financialAccounts ?? [],
+      sinkingFunds: parsed.sinkingFunds ?? [],
+      paychecks: parsed.paychecks ?? [],
+      investmentHoldings: parsed.investmentHoldings ?? [],
+      monthlyFinancialReviews: parsed.monthlyFinancialReviews ?? [],
+      budgetCategories: parsed.budgetCategories ?? [],
+      monthlyBudgetActuals: parsed.monthlyBudgetActuals ?? [],
+      accountPartitions: parsed.accountPartitions ?? [],
+      financialPurchases: parsed.financialPurchases ?? [],
     };
   } catch {
     return null;

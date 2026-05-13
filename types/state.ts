@@ -8,6 +8,17 @@ import type { Meal } from "@/types/meals";
 import type { WorkoutPlan } from "@/types/workouts";
 import type { Routine } from "@/types/routines";
 import type { TravelTrip } from "@/types/travel";
+import type {
+  FinancialAccount,
+  SinkingFund,
+  Paycheck,
+  InvestmentHolding,
+  MonthlyFinancialReview,
+  BudgetCategory,
+  MonthlyBudgetActual,
+  AccountPartition,
+  FinancialPurchase,
+} from "@/types/finances";
 
 export interface FullState {
   tasks: Task[];
@@ -23,6 +34,15 @@ export interface FullState {
   workouts: WorkoutPlan[];
   routines: Routine[];
   trips: TravelTrip[];
+  financialAccounts: FinancialAccount[];
+  sinkingFunds: SinkingFund[];
+  paychecks: Paycheck[];
+  investmentHoldings: InvestmentHolding[];
+  monthlyFinancialReviews: MonthlyFinancialReview[];
+  budgetCategories: BudgetCategory[];
+  monthlyBudgetActuals: MonthlyBudgetActual[];
+  accountPartitions: AccountPartition[];
+  financialPurchases: FinancialPurchase[];
 }
 
 //before meals

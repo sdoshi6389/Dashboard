@@ -9,6 +9,17 @@ import type { Meal } from "@/types/meals";
 import type { WorkoutPlan } from "@/types/workouts";
 import type { Routine } from "@/types/routines";
 import type { TravelTrip } from "@/types/travel";
+import type {
+  FinancialAccount,
+  SinkingFund,
+  Paycheck,
+  InvestmentHolding,
+  MonthlyFinancialReview,
+  BudgetCategory,
+  MonthlyBudgetActual,
+  AccountPartition,
+  FinancialPurchase,
+} from "@/types/finances";
 import type { FullState } from "@/types/state";
 import { uid } from "./utils";
 import { addMonths, toISODate } from "./date";
@@ -87,6 +98,43 @@ export interface AppState extends FullState {
   addTrip: (trip: Omit<TravelTrip, "id">) => void;
   updateTrip: (id: string, patch: Partial<TravelTrip>) => void;
   deleteTrip: (id: string) => void;
+
+  addFinancialAccount: (account: Omit<FinancialAccount, "id">) => void;
+  updateFinancialAccount: (id: string, patch: Partial<FinancialAccount>) => void;
+  deleteFinancialAccount: (id: string) => void;
+
+  addSinkingFund: (fund: Omit<SinkingFund, "id">) => void;
+  updateSinkingFund: (id: string, patch: Partial<SinkingFund>) => void;
+  deleteSinkingFund: (id: string) => void;
+
+  addPaycheck: (paycheck: Omit<Paycheck, "id">) => void;
+  updatePaycheck: (id: string, patch: Partial<Paycheck>) => void;
+  deletePaycheck: (id: string) => void;
+
+  addInvestmentHolding: (holding: Omit<InvestmentHolding, "id">) => void;
+  updateInvestmentHolding: (id: string, patch: Partial<InvestmentHolding>) => void;
+  deleteInvestmentHolding: (id: string) => void;
+
+  addMonthlyFinancialReview: (review: Omit<MonthlyFinancialReview, "id">) => void;
+  updateMonthlyFinancialReview: (id: string, patch: Partial<MonthlyFinancialReview>) => void;
+  deleteMonthlyFinancialReview: (id: string) => void;
+
+  addBudgetCategory: (cat: Omit<BudgetCategory, "id">) => void;
+  updateBudgetCategory: (id: string, patch: Partial<BudgetCategory>) => void;
+  deleteBudgetCategory: (id: string) => void;
+
+  addMonthlyBudgetActual: (actual: Omit<MonthlyBudgetActual, "id">) => void;
+  updateMonthlyBudgetActual: (id: string, patch: Partial<MonthlyBudgetActual>) => void;
+  deleteMonthlyBudgetActual: (id: string) => void;
+  upsertMonthlyBudgetActual: (month: string, categoryId: string, amountSpent: number, notes?: string) => void;
+
+  addAccountPartition: (partition: Omit<AccountPartition, "id">) => void;
+  updateAccountPartition: (id: string, patch: Partial<AccountPartition>) => void;
+  deleteAccountPartition: (id: string) => void;
+
+  addFinancialPurchase: (purchase: Omit<FinancialPurchase, "id">) => void;
+  updateFinancialPurchase: (id: string, patch: Partial<FinancialPurchase>) => void;
+  deleteFinancialPurchase: (id: string) => void;
 }
 
 const now = () => new Date().toISOString();
@@ -158,6 +206,15 @@ function getFullStateFromStore(get: () => AppState): FullState {
     workouts: s.workouts,
     routines: s.routines,
     trips: s.trips,
+    financialAccounts: s.financialAccounts,
+    sinkingFunds: s.sinkingFunds,
+    paychecks: s.paychecks,
+    investmentHoldings: s.investmentHoldings,
+    monthlyFinancialReviews: s.monthlyFinancialReviews,
+    budgetCategories: s.budgetCategories,
+    monthlyBudgetActuals: s.monthlyBudgetActuals,
+    accountPartitions: s.accountPartitions,
+    financialPurchases: s.financialPurchases,
   };
 }
 
@@ -203,6 +260,15 @@ export const useStore = create<AppState>((set, get) => ({
   workouts: [],
   routines: [],
   trips: [],
+  financialAccounts: [],
+  sinkingFunds: [],
+  paychecks: [],
+  investmentHoldings: [],
+  monthlyFinancialReviews: [],
+  budgetCategories: [],
+  monthlyBudgetActuals: [],
+  accountPartitions: [],
+  financialPurchases: [],
   _hydrated: false,
   _syncing: false,
   _authed: false,
@@ -225,6 +291,15 @@ export const useStore = create<AppState>((set, get) => ({
           workouts: local.workouts ?? [],
           routines: local.routines ?? [],
           trips: local.trips ?? [],
+          financialAccounts: local.financialAccounts ?? [],
+          sinkingFunds: local.sinkingFunds ?? [],
+          paychecks: local.paychecks ?? [],
+          investmentHoldings: local.investmentHoldings ?? [],
+          monthlyFinancialReviews: local.monthlyFinancialReviews ?? [],
+          budgetCategories: local.budgetCategories ?? [],
+          monthlyBudgetActuals: local.monthlyBudgetActuals ?? [],
+          accountPartitions: local.accountPartitions ?? [],
+          financialPurchases: local.financialPurchases ?? [],
         });
       }
 
@@ -248,6 +323,15 @@ export const useStore = create<AppState>((set, get) => ({
             workouts: cloud.workouts ?? [],
             routines: cloud.routines ?? [],
             trips: cloud.trips ?? [],
+            financialAccounts: cloud.financialAccounts ?? [],
+            sinkingFunds: cloud.sinkingFunds ?? [],
+            paychecks: cloud.paychecks ?? [],
+            investmentHoldings: cloud.investmentHoldings ?? [],
+            monthlyFinancialReviews: cloud.monthlyFinancialReviews ?? [],
+            budgetCategories: cloud.budgetCategories ?? [],
+            monthlyBudgetActuals: cloud.monthlyBudgetActuals ?? [],
+            accountPartitions: cloud.accountPartitions ?? [],
+            financialPurchases: cloud.financialPurchases ?? [],
           });
           saveState({
             version: 2,
@@ -280,6 +364,11 @@ export const useStore = create<AppState>((set, get) => ({
         workouts: cloud.workouts ?? [],
         routines: cloud.routines ?? [],
         trips: cloud.trips ?? [],
+        financialAccounts: cloud.financialAccounts ?? [],
+        sinkingFunds: cloud.sinkingFunds ?? [],
+        paychecks: cloud.paychecks ?? [],
+        investmentHoldings: cloud.investmentHoldings ?? [],
+        monthlyFinancialReviews: cloud.monthlyFinancialReviews ?? [],
       });
       saveState({
         version: 2,
@@ -334,6 +423,15 @@ export const useStore = create<AppState>((set, get) => ({
       workouts: [],
       routines: [],
       trips: [],
+      financialAccounts: [],
+      sinkingFunds: [],
+      paychecks: [],
+      investmentHoldings: [],
+      monthlyFinancialReviews: [],
+      budgetCategories: [],
+      monthlyBudgetActuals: [],
+      accountPartitions: [],
+      financialPurchases: [],
     });
   },
 
@@ -356,6 +454,15 @@ export const useStore = create<AppState>((set, get) => ({
       workouts: [],
       routines: [],
       trips: [],
+      financialAccounts: [],
+      sinkingFunds: [],
+      paychecks: [],
+      investmentHoldings: [],
+      monthlyFinancialReviews: [],
+      budgetCategories: [],
+      monthlyBudgetActuals: [],
+      accountPartitions: [],
+      financialPurchases: [],
     });
     clearStorage();
     persistLocal(get);
@@ -377,6 +484,15 @@ export const useStore = create<AppState>((set, get) => ({
       workouts: state.workouts ?? [],
       routines: state.routines ?? [],
       trips: state.trips ?? [],
+      financialAccounts: state.financialAccounts ?? [],
+      sinkingFunds: state.sinkingFunds ?? [],
+      paychecks: state.paychecks ?? [],
+      investmentHoldings: state.investmentHoldings ?? [],
+      monthlyFinancialReviews: state.monthlyFinancialReviews ?? [],
+      budgetCategories: state.budgetCategories ?? [],
+      monthlyBudgetActuals: state.monthlyBudgetActuals ?? [],
+      accountPartitions: state.accountPartitions ?? [],
+      financialPurchases: state.financialPurchases ?? [],
     });
     saveState({
       version: 2,
@@ -688,4 +804,233 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   markDelivered: (id) => get().updatePackage(id, { status: "delivered" }),
+
+  addFinancialAccount: (account) => {
+    const a: FinancialAccount = { ...account, id: uid() };
+    set((s) => ({ financialAccounts: [...s.financialAccounts, a] }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  updateFinancialAccount: (id, patch) => {
+    set((s) => ({
+      financialAccounts: s.financialAccounts.map((a) => (a.id === id ? { ...a, ...patch } : a)),
+    }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  deleteFinancialAccount: (id) => {
+    set((s) => ({ financialAccounts: s.financialAccounts.filter((a) => a.id !== id) }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+
+  addSinkingFund: (fund) => {
+    const f: SinkingFund = { ...fund, id: uid() };
+    set((s) => ({ sinkingFunds: [...s.sinkingFunds, f] }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  updateSinkingFund: (id, patch) => {
+    set((s) => ({
+      sinkingFunds: s.sinkingFunds.map((f) => (f.id === id ? { ...f, ...patch } : f)),
+    }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  deleteSinkingFund: (id) => {
+    set((s) => ({ sinkingFunds: s.sinkingFunds.filter((f) => f.id !== id) }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+
+  addPaycheck: (paycheck) => {
+    const p: Paycheck = { ...paycheck, id: uid() };
+    set((s) => ({ paychecks: [...s.paychecks, p] }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  updatePaycheck: (id, patch) => {
+    set((s) => ({
+      paychecks: s.paychecks.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+    }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  deletePaycheck: (id) => {
+    set((s) => ({ paychecks: s.paychecks.filter((p) => p.id !== id) }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+
+  addInvestmentHolding: (holding) => {
+    const h: InvestmentHolding = { ...holding, id: uid() };
+    set((s) => ({ investmentHoldings: [...s.investmentHoldings, h] }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  updateInvestmentHolding: (id, patch) => {
+    set((s) => ({
+      investmentHoldings: s.investmentHoldings.map((h) => (h.id === id ? { ...h, ...patch } : h)),
+    }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  deleteInvestmentHolding: (id) => {
+    set((s) => ({ investmentHoldings: s.investmentHoldings.filter((h) => h.id !== id) }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+
+  addMonthlyFinancialReview: (review) => {
+    const r: MonthlyFinancialReview = { ...review, id: uid() };
+    set((s) => ({ monthlyFinancialReviews: [...s.monthlyFinancialReviews, r] }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  updateMonthlyFinancialReview: (id, patch) => {
+    set((s) => ({
+      monthlyFinancialReviews: s.monthlyFinancialReviews.map((r) =>
+        r.id === id ? { ...r, ...patch } : r
+      ),
+    }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  deleteMonthlyFinancialReview: (id) => {
+    set((s) => ({ monthlyFinancialReviews: s.monthlyFinancialReviews.filter((r) => r.id !== id) }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+
+  addAccountPartition: (partition) => {
+    const p: AccountPartition = { ...partition, id: uid() };
+    set((s) => ({ accountPartitions: [...s.accountPartitions, p] }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  updateAccountPartition: (id, patch) => {
+    set((s) => ({
+      accountPartitions: s.accountPartitions.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+    }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  deleteAccountPartition: (id) => {
+    set((s) => ({ accountPartitions: s.accountPartitions.filter((p) => p.id !== id) }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+
+  addFinancialPurchase: (purchase) => {
+    const p: FinancialPurchase = { ...purchase, id: uid() };
+    set((s) => {
+      let accounts = s.financialAccounts;
+      if (p.accountId) {
+        const acct = accounts.find((a) => a.id === p.accountId);
+        if (acct) {
+          const delta = acct.type === "credit_card" ? p.amount : -p.amount;
+          accounts = accounts.map((a) => a.id === p.accountId ? { ...a, balance: Math.max(0, a.balance + delta) } : a);
+        }
+      }
+      return { financialPurchases: [...s.financialPurchases, p], financialAccounts: accounts };
+    });
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  updateFinancialPurchase: (id, patch) => {
+    const old = get().financialPurchases.find((p) => p.id === id);
+    set((s) => {
+      let accounts = s.financialAccounts;
+      // Reverse the old purchase effect
+      if (old?.accountId && old.amount) {
+        const acct = accounts.find((a) => a.id === old.accountId);
+        if (acct) {
+          const delta = acct.type === "credit_card" ? -old.amount : old.amount;
+          accounts = accounts.map((a) => a.id === old.accountId ? { ...a, balance: Math.max(0, a.balance + delta) } : a);
+        }
+      }
+      const updated = { ...old!, ...patch };
+      // Apply the new purchase effect
+      if (updated.accountId && updated.amount) {
+        const acct = accounts.find((a) => a.id === updated.accountId);
+        if (acct) {
+          const delta = acct.type === "credit_card" ? updated.amount : -updated.amount;
+          accounts = accounts.map((a) => a.id === updated.accountId ? { ...a, balance: Math.max(0, a.balance + delta) } : a);
+        }
+      }
+      return {
+        financialPurchases: s.financialPurchases.map((p) => (p.id === id ? updated : p)),
+        financialAccounts: accounts,
+      };
+    });
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  deleteFinancialPurchase: (id) => {
+    const p = get().financialPurchases.find((fp) => fp.id === id);
+    set((s) => {
+      let accounts = s.financialAccounts;
+      if (p?.accountId && p.amount) {
+        const acct = accounts.find((a) => a.id === p.accountId);
+        if (acct) {
+          const delta = acct.type === "credit_card" ? -p.amount : p.amount;
+          accounts = accounts.map((a) => a.id === p.accountId ? { ...a, balance: Math.max(0, a.balance + delta) } : a);
+        }
+      }
+      return { financialPurchases: s.financialPurchases.filter((fp) => fp.id !== id), financialAccounts: accounts };
+    });
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+
+  addBudgetCategory: (cat) => {
+    const c: BudgetCategory = { ...cat, id: uid() };
+    set((s) => ({ budgetCategories: [...s.budgetCategories, c] }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  updateBudgetCategory: (id, patch) => {
+    set((s) => ({
+      budgetCategories: s.budgetCategories.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  deleteBudgetCategory: (id) => {
+    set((s) => ({
+      budgetCategories: s.budgetCategories.filter((c) => c.id !== id),
+      monthlyBudgetActuals: s.monthlyBudgetActuals.filter((a) => a.categoryId !== id),
+    }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+
+  addMonthlyBudgetActual: (actual) => {
+    const a: MonthlyBudgetActual = { ...actual, id: uid() };
+    set((s) => ({ monthlyBudgetActuals: [...s.monthlyBudgetActuals, a] }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  updateMonthlyBudgetActual: (id, patch) => {
+    set((s) => ({
+      monthlyBudgetActuals: s.monthlyBudgetActuals.map((a) => (a.id === id ? { ...a, ...patch } : a)),
+    }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  deleteMonthlyBudgetActual: (id) => {
+    set((s) => ({ monthlyBudgetActuals: s.monthlyBudgetActuals.filter((a) => a.id !== id) }));
+    persistLocal(get);
+    scheduleCloudSave(get, set);
+  },
+  upsertMonthlyBudgetActual: (month, categoryId, amountSpent, notes) => {
+    const existing = get().monthlyBudgetActuals.find(
+      (a) => a.month === month && a.categoryId === categoryId
+    );
+    if (existing) {
+      get().updateMonthlyBudgetActual(existing.id, { amountSpent, notes });
+    } else {
+      get().addMonthlyBudgetActual({ month, categoryId, amountSpent, notes });
+    }
+  },
 }));
