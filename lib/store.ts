@@ -904,19 +904,94 @@ export const useStore = create<AppState>((set, get) => ({
 
   addAccountPartition: (partition) => {
     const p: AccountPartition = { ...partition, id: uid() };
-    set((s) => ({ accountPartitions: [...s.accountPartitions, p] }));
+    set((s) => {
+      // Increase account balance by partition amount
+      const accounts = s.financialAccounts.map((a) =>
+        a.id === p.accountId ? { ...a, balance: a.balance + p.amount } : a
+      );
+      // Increase linked goal's currentAmount
+      const funds = p.sinkingFundId
+        ? s.sinkingFunds.map((f) =>
+            f.id === p.sinkingFundId ? { ...f, currentAmount: f.currentAmount + p.amount } : f
+          )
+        : s.sinkingFunds;
+      return { accountPartitions: [...s.accountPartitions, p], financialAccounts: accounts, sinkingFunds: funds };
+    });
     persistLocal(get);
     scheduleCloudSave(get, set);
   },
   updateAccountPartition: (id, patch) => {
-    set((s) => ({
-      accountPartitions: s.accountPartitions.map((p) => (p.id === id ? { ...p, ...patch } : p)),
-    }));
+    const old = get().accountPartitions.find((p) => p.id === id);
+    set((s) => {
+      const updated = { ...old!, ...patch };
+      const delta = updated.amount - (old?.amount ?? 0);
+
+      // Adjust account balance by the amount delta (handle account change too)
+      let accounts = s.financialAccounts;
+      if (old?.accountId !== updated.accountId) {
+        // Account changed — reverse from old account, apply to new account
+        accounts = accounts.map((a) => {
+          if (a.id === old?.accountId) return { ...a, balance: Math.max(0, a.balance - (old?.amount ?? 0)) };
+          if (a.id === updated.accountId) return { ...a, balance: a.balance + updated.amount };
+          return a;
+        });
+      } else {
+        accounts = accounts.map((a) =>
+          a.id === updated.accountId ? { ...a, balance: a.balance + delta } : a
+        );
+      }
+
+      // Adjust sinking fund currentAmounts
+      let funds = s.sinkingFunds;
+      if (old?.sinkingFundId && old.sinkingFundId !== updated.sinkingFundId) {
+        // Goal changed — reverse old, apply new
+        funds = funds.map((f) => {
+          if (f.id === old.sinkingFundId) return { ...f, currentAmount: Math.max(0, f.currentAmount - (old?.amount ?? 0)) };
+          if (f.id === updated.sinkingFundId) return { ...f, currentAmount: f.currentAmount + updated.amount };
+          return f;
+        });
+      } else if (updated.sinkingFundId) {
+        funds = funds.map((f) =>
+          f.id === updated.sinkingFundId ? { ...f, currentAmount: f.currentAmount + delta } : f
+        );
+      } else if (old?.sinkingFundId) {
+        // Goal was removed
+        funds = funds.map((f) =>
+          f.id === old.sinkingFundId ? { ...f, currentAmount: Math.max(0, f.currentAmount - (old?.amount ?? 0)) } : f
+        );
+      }
+
+      return {
+        accountPartitions: s.accountPartitions.map((p) => (p.id === id ? updated : p)),
+        financialAccounts: accounts,
+        sinkingFunds: funds,
+      };
+    });
     persistLocal(get);
     scheduleCloudSave(get, set);
   },
   deleteAccountPartition: (id) => {
-    set((s) => ({ accountPartitions: s.accountPartitions.filter((p) => p.id !== id) }));
+    const p = get().accountPartitions.find((ap) => ap.id === id);
+    set((s) => {
+      // Decrease account balance by partition amount
+      const accounts = p
+        ? s.financialAccounts.map((a) =>
+            a.id === p.accountId ? { ...a, balance: Math.max(0, a.balance - p.amount) } : a
+          )
+        : s.financialAccounts;
+      // Decrease linked goal's currentAmount
+      const funds =
+        p?.sinkingFundId
+          ? s.sinkingFunds.map((f) =>
+              f.id === p.sinkingFundId ? { ...f, currentAmount: Math.max(0, f.currentAmount - p.amount) } : f
+            )
+          : s.sinkingFunds;
+      return {
+        accountPartitions: s.accountPartitions.filter((ap) => ap.id !== id),
+        financialAccounts: accounts,
+        sinkingFunds: funds,
+      };
+    });
     persistLocal(get);
     scheduleCloudSave(get, set);
   },
